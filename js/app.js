@@ -1,31 +1,47 @@
-/**
- * 客用注文画面コントローラー (カート ＆ 上限バリデーション ＆ QR生成)
- */
-
 const ClientApp = {
   products: [],
   pastPurchases: {},
-  cart: {}, // { productId: qty }
+  cart: {},
   userEmail: "",
 
-  async init() {
+  init() {
+    const savedEmail = localStorage.getItem("LASALLE_USER_EMAIL");
+    if (savedEmail) {
+      document.getElementById("input-user-email").value = savedEmail;
+      this.setUserEmail();
+    }
+  },
+
+  async setUserEmail() {
+    const emailInput = document.getElementById("input-user-email").value.trim();
+    if (!emailInput || !emailInput.includes("@")) {
+      alert("有効なメールアドレスを入力してください。");
+      return;
+    }
+
+    this.userEmail = emailInput;
+    localStorage.setItem("LASALLE_USER_EMAIL", this.userEmail);
+    document.getElementById("user-email-badge").innerText = this.userEmail;
+    document.getElementById("email-setup-box").style.display = "none";
+    document.getElementById("shop-section").style.display = "block";
+
+    this.loadCatalog();
+  },
+
+  async loadCatalog() {
     showLoading("商品情報を取得中...");
     try {
-      const ctx = await ApiClient.request("initContext");
+      const ctx = await ApiClient.request("initContext", { email: this.userEmail });
       this.products = ctx.products || [];
       this.pastPurchases = ctx.pastPurchases || {};
-      this.userEmail = ctx.userEmail || "";
-
-      document.getElementById("user-email-badge").innerText = this.userEmail;
       this.renderProducts();
     } catch (err) {
-      alert("初期化エラー: " + err.message);
+      alert("取得エラー: " + err.message);
     } finally {
       hideLoading();
     }
   },
 
-  // 🎴 トレカ風縦長カード描画
   renderProducts() {
     const grid = document.getElementById("product-grid");
     grid.innerHTML = "";
@@ -47,12 +63,10 @@ const ClientApp = {
         <div class="card-content">
           <h3 class="card-title">${p.name}</h3>
           <div class="card-price">¥${p.price.toLocaleString()}</div>
-          
           <div class="limit-info">
-            <span>購入上限: 個人<sup>${p.maxLimitPerUser}</sup>個まで</span>
-            <span class="past-qty-tag">過去注文: ${pastQty}個</span>
+            <span>上限: 個人${p.maxLimitPerUser}個まで</span>
+            <span class="past-qty-tag">注文済: ${pastQty}個</span>
           </div>
-
           <div class="card-actions">
             <button class="btn-qty" onclick="ClientApp.updateQty('${p.id}', -1)" ${currentCartQty <= 0 ? 'disabled' : ''}>-</button>
             <span class="qty-display">${currentCartQty}</span>
@@ -152,11 +166,12 @@ const ClientApp = {
     showLoading("注文を確定中...");
 
     try {
-      const result = await ApiClient.request("submitOrder", { cart: this.cart });
-      
-      // QRコードの生成 (形式: ORD0001_署名文字列)
+      const result = await ApiClient.request("submitOrder", {
+        email: this.userEmail,
+        cart: this.cart
+      });
+
       const qrPayload = `${result.orderId}_${result.signature}`;
-      
       document.getElementById("qrcode").innerHTML = "";
       new QRCode(document.getElementById("qrcode"), {
         text: qrPayload,
