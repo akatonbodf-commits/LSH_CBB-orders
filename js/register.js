@@ -3,8 +3,51 @@
  */
 let rawDigits = "";
 let activeOrder = null;
+let isScanning = true;
 
-// テンキーロジック: 1の位挿入 ＆ 0埋め補正 (例: 1234 -> ORD01234)
+window.addEventListener("DOMContentLoaded", () => {
+  initCameraScanner();
+});
+
+// 1. リアルタイムカメラ解析ループ (canvas + jsQR)
+function initCameraScanner() {
+  const video = document.getElementById("video-preview");
+  const canvas = document.getElementById("camera-canvas");
+  const ctx = canvas.getContext("2d");
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(stream => {
+      video.srcObject = stream;
+      video.setAttribute("playsinline", true);
+      video.play();
+      requestAnimationFrame(tick);
+    })
+    .catch(err => console.warn("カメラ起動不可 (手入力のみ使用可):", err));
+
+  function tick() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA && isScanning) {
+      canvas.height = video.videoHeight;
+      canvas.width = video.videoWidth;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert",
+      });
+
+      if (code && code.data) {
+        const parts = code.data.split("_");
+        if (parts.length === 2 && parts[0].startsWith("ORD")) {
+          isScanning = false; // スキャン一次停止
+          searchOrder(parts[0], parts[1]);
+        }
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+}
+
+// 2. 電卓風テンキー入力
 function pressKey(num) {
   if (rawDigits.length >= 5) return;
   rawDigits += num;
@@ -23,10 +66,11 @@ function updateTenKeyDisplay() {
 
 function submitTenKey() {
   const padded = rawDigits.padStart(5, "0");
+  isScanning = false;
   searchOrder(`ORD${padded}`, "");
 }
 
-// 照会処理
+// 3. 照会・カード描画
 async function searchOrder(orderId, signature) {
   try {
     const res = await fetchApi("searchOrder", { orderId, signature, regId: CONFIG.REG_ID });
@@ -57,7 +101,7 @@ function renderOrderCard() {
   document.getElementById("btn-cancel").disabled = false;
 }
 
-// ワンボタン・ステータス状態変化ロジック
+// 4. ワンボタンステータス切替
 function updateMainButton() {
   const mainBtn = document.getElementById("btn-main");
   const mainText = document.getElementById("btn-main-text");
@@ -74,7 +118,6 @@ function updateMainButton() {
   }
 }
 
-// 確定ボタン処理 (未払い ➔ 支払い済 ➔ 引換済)
 async function handleMainAction() {
   document.getElementById("btn-main").disabled = true;
 
@@ -85,7 +128,7 @@ async function handleMainAction() {
       renderOrderCard();
     } else if (activeOrder.status === "支払い済") {
       await fetchApi("confirmDelivery", { orderId: activeOrder.orderId, regId: CONFIG.REG_ID });
-      alert("✨ 商品の引き渡しが完了しました。");
+      alert("✨ 商品の引き渡しが正常に完了しました。");
       resetUI();
     }
   } catch (err) {
@@ -108,4 +151,5 @@ function resetUI() {
   document.getElementById("order-card").style.display = "none";
   document.getElementById("btn-main").disabled = true;
   document.getElementById("btn-cancel").disabled = true;
+  isScanning = true; // スキャン再開
 }
