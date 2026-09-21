@@ -18,6 +18,7 @@
     <div class="left-panel">
       <div class="camera-box">
         <video id="video-preview" autoplay playsinline muted></video>
+        <canvas id="camera-canvas" hidden></canvas>
       </div>
       <div>
         <label style="font-size: 11px; color: #94A3B8;">注文ID 電卓手入力</label>
@@ -45,7 +46,7 @@
     <div class="center-panel">
       <div id="placeholder" style="text-align: center; color: #94A3B8; margin-top: 100px;">
         <span class="material-icons" style="font-size: 64px;">qr_code_scanner</span>
-        <p>QRコードを読み取るか、テンキーで注文IDを入力してください。</p>
+        <p>QRコードをカメラにかざすか、テンキーで注文IDを入力してください。</p>
       </div>
 
       <div id="order-card" class="order-card" style="display: none;">
@@ -75,6 +76,7 @@
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/register.js"></script>
