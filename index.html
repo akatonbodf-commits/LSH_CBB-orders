@@ -5,57 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ラ・サール学園バザー オンライン注文</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <style>
-    :root {
-      --primary: #1E3A8A;
-      --primary-light: #E8F0FE;
-      --accent: #E37400;
-      --danger: #D93025;
-      --text: #202124;
-      --bg: #F8F9FA;
-      --card-bg: #FFFFFF;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 90px; -webkit-user-select: none; }
-    header { background-color: var(--primary); color: #FFF; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-    header h1 { font-size: 18px; font-weight: 700; }
-    
-    .container { padding: 16px; max-width: 600px; margin: 0 auto; }
-    
-    /* 商品カード */
-    .product-card { background: var(--card-bg); border-radius: 16px; padding: 12px; margin-bottom: 16px; display: flex; gap: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid #E5E7EB; }
-    
-    /* 画像コンテナとタグ・SOLD OUT表示 */
-    .img-wrapper { position: relative; width: 100px; height: 100px; flex-shrink: 0; border-radius: 12px; overflow: hidden; background: #EEE; }
-    .product-img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s; }
-    .product-img.sold-out { filter: grayscale(100%); opacity: 0.6; }
-    
-    .badge-few { position: absolute; top: 4px; right: 4px; background: #FFE0B2; color: #E65100; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    .sold-out-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); color: #FFF; font-weight: 900; font-size: 14px; display: flex; align-items: center; justify-content: center; letter-spacing: 1px; z-index: 3; }
-    
-    .product-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-    .product-name { font-size: 16px; font-weight: 700; }
-    .product-price { font-size: 15px; font-weight: 700; color: #4B5563; }
-    .product-limit { font-size: 11px; color: #6B7280; }
-    
-    /* 数量コントローラー */
-    .qty-controller { display: flex; align-items: center; background: #F3F4F6; border-radius: 20px; padding: 2px; gap: 4px; align-self: flex-end; }
-    .qty-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: #FFF; color: var(--primary); font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .qty-btn:disabled { color: #D1D5DB; background: #F3F4F6; box-shadow: none; cursor: not-allowed; }
-    .qty-val { width: 28px; text-align: center; font-weight: 700; font-size: 15px; }
-
-    /* 下部カートバー */
-    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #FFF; padding: 12px 16px; box-shadow: 0 -4px 12px rgba(0,0,0,0.08); display: none; justify-content: center; z-index: 90; }
-    .cart-btn { background: var(--primary); color: #FFF; border: none; padding: 14px 24px; border-radius: 28px; font-weight: 700; font-size: 16px; width: 100%; max-width: 600px; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-
-    /* モーダル & 暗転オーバーレイ */
-    .modal { position: fixed; top: 0; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
-    .modal-content { background: #FFF; border-radius: 20px 20px 0 0; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; padding: 20px; }
-    
-    #loading-overlay { position: fixed; top: 0; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); color: #FFF; z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #FFF; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -73,7 +23,6 @@
     </button>
   </div>
 
-  <!-- 確認モーダル -->
   <div class="modal" id="review-modal">
     <div class="modal-content">
       <h3 style="margin-bottom: 16px;">🛒 注文内容の最終確認</h3>
@@ -86,12 +35,11 @@
     </div>
   </div>
 
-  <!-- 完了モーダル -->
   <div class="modal" id="success-modal" style="align-items: center; padding: 16px;">
     <div class="modal-content" style="border-radius: 20px; text-align: center;">
       <span class="material-icons" style="color: #16A34A; font-size: 56px;">check_circle</span>
       <h2>ご注文が確定しました！</h2>
-      <p style="font-size: 12px; color: var(--danger); margin: 8px 0; font-weight: 700;">※この画面のスクリーンショットを必ず保存してください。</p>
+      <p style="font-size: 12px; color: var(--danger); margin: 8px 0; font-weight: 700;">※この画面のスクリーンショットを保存してください。</p>
       <div id="qrcode-area" style="margin: 16px auto; display: inline-block;"></div>
       <div style="background: var(--primary-light); padding: 12px; border-radius: 10px; text-align: left; font-size: 14px; margin-bottom: 16px;">
         <div>注文ID: <b id="res-order-id">-</b></div>
@@ -101,165 +49,14 @@
     </div>
   </div>
 
-  <!-- 暗転スピナー -->
   <div id="loading-overlay">
     <div class="spinner"></div>
     <div id="loading-text" style="font-size: 14px; font-weight: 700;">データを安全に読み込み中...</div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script>
-    const GAS_API_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"; // GASのWeb App URL
-    
-    let state = {
-      email: "user@example.com",
-      products: [],
-      pastPurchases: {},
-      cart: {}
-    };
-
-    // 初期化処理
-    window.addEventListener("DOMContentLoaded", async () => {
-      showLoading("初期データを安全に読み込み中...");
-      try {
-        const res = await fetchApi("initContext", { email: state.email });
-        if (!res.success) throw new Error(res.message);
-        
-        state.products = res.products;
-        state.pastPurchases = res.pastPurchases || {};
-        document.getElementById("user-badge").innerText = state.email;
-        renderProducts();
-      } catch (err) {
-        alert("初期化エラー: " + err.message);
-      } finally {
-        hideLoading();
-      }
-    });
-
-    // 共通 Fetch ラッパー
-    async function fetchApi(action, payload) {
-      const response = await fetch(GAS_API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action, ...payload })
-      });
-      return await response.json();
-    }
-
-    // 商品一覧描画
-    function renderProducts() {
-      const container = document.getElementById("product-list");
-      container.innerHTML = "";
-
-      state.products.forEach(prod => {
-        const pastQty = state.pastPurchases[prod.id] || 0;
-        const currentQty = state.cart[prod.id] || 0;
-        const totalQty = pastQty + currentQty;
-
-        const isSoldOut = prod.stock <= 0;
-        const isFew = prod.stock > 0 && prod.stock <= 5;
-        const isMaxLimit = totalQty >= prod.maxLimit;
-
-        const card = document.createElement("div");
-        card.className = "product-card";
-
-        card.innerHTML = `
-          <div class="img-wrapper">
-            <img src="${prod.imageUrl || 'https://placehold.co/100'}" class="product-img ${isSoldOut ? 'sold-out' : ''}">
-            ${isFew ? `<div class="badge-few">残り${prod.stock}個</div>` : ''}
-            ${isSoldOut ? `<div class="sold-out-overlay">SOLD OUT</div>` : ''}
-          </div>
-          <div class="product-info">
-            <div>
-              <div class="product-name">${prod.name}</div>
-              <div class="product-price">¥${prod.price.toLocaleString()}</div>
-              <div class="product-limit">上限: ${prod.maxLimit}個 ${pastQty > 0 ? `(購入済:${pastQty})` : ''}</div>
-            </div>
-            <div class="qty-controller">
-              <button class="qty-btn" onclick="updateQty('${prod.id}', -1)" ${currentQty === 0 ? 'disabled' : ''}>-</button>
-              <div class="qty-val">${currentQty}</div>
-              <button class="qty-btn" onclick="updateQty('${prod.id}', 1)" ${(isSoldOut || isMaxLimit) ? 'disabled' : ''}>+</button>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-      updateCartBar();
-    }
-
-    function updateQty(id, delta) {
-      const current = state.cart[id] || 0;
-      const next = current + delta;
-      if (next <= 0) delete state.cart[id];
-      else state.cart[id] = next;
-      renderProducts();
-    }
-
-    function updateCartBar() {
-      let total = 0, count = 0;
-      for (const id in state.cart) {
-        const p = state.products.find(item => item.id === id);
-        if (p) { total += p.price * state.cart[id]; count += state.cart[id]; }
-      }
-      const bar = document.getElementById("cart-bar");
-      bar.style.display = count > 0 ? "flex" : "none";
-      document.getElementById("cart-total").innerText = `¥${total.toLocaleString()}`;
-    }
-
-    function openCartReview() {
-      const itemsDiv = document.getElementById("review-items");
-      itemsDiv.innerHTML = "";
-      let total = 0;
-
-      for (const id in state.cart) {
-        const p = state.products.find(item => item.id === id);
-        if (!p) continue;
-        const subtotal = p.price * state.cart[id];
-        total += subtotal;
-
-        itemsDiv.innerHTML += `
-          <div style="display:flex; justify-size:space-between; padding: 8px 0; border-bottom:1px solid #EEE;">
-            <div><b>${p.name}</b> × ${state.cart[id]}</div>
-            <div>¥${subtotal.toLocaleString()}</div>
-          </div>
-        `;
-      }
-      document.getElementById("modal-total").innerText = `¥${total.toLocaleString()}`;
-      document.getElementById("review-modal").style.display = "flex";
-    }
-
-    async function submitOrder() {
-      document.getElementById("review-modal").style.display = "none";
-      showLoading("在庫を安全に確保中...\n画面を閉じずにお待ちください。");
-
-      try {
-        const res = await fetchApi("submitOrder", { email: state.email, cart: state.cart });
-        if (!res.success) throw new Error(res.message);
-
-        document.getElementById("res-order-id").innerText = res.orderId;
-        document.getElementById("res-total").innerText = `¥${res.totalAmount.toLocaleString()}`;
-        
-        // QR生成
-        document.getElementById("qrcode-area").innerHTML = "";
-        new QRCode(document.getElementById("qrcode-area"), {
-          text: `${res.orderId}_${res.signature}`,
-          width: 160, height: 160
-        });
-
-        document.getElementById("success-modal").style.display = "flex";
-      } catch (err) {
-        alert("注文エラー: " + err.message);
-      } finally {
-        hideLoading();
-      }
-    }
-
-    function showLoading(text) {
-      document.getElementById("loading-text").innerText = text;
-      document.getElementById("loading-overlay").style.display = "flex";
-    }
-    function hideLoading() {
-      document.getElementById("loading-overlay").style.display = "none";
-    }
-  </script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/order.js"></script>
 </body>
 </html>
