@@ -12,23 +12,29 @@
   <header class="client-header">
     <div class="header-content">
       <h1>ラ・サール学園バザー 2026</h1>
-      <span id="user-email-badge" class="user-email-tag">取得中...</span>
+      <span id="user-email-badge" class="user-email-tag">未認証</span>
     </div>
   </header>
 
   <main class="client-container">
-    <div class="section-title">
-      <h2>商品一覧</h2>
-      <p class="section-sub">ご希望の商品の数量を選択してください（お一人様の上限あり）</p>
+    <!-- 簡易メールアドレス入力（アカウント特定用） -->
+    <div id="email-setup-box" class="email-setup-card">
+      <label><b>メールアドレスを入力して注文を開始してください</b></label>
+      <div class="input-row">
+        <input type="email" id="input-user-email" placeholder="example@lasalle.ed.jp">
+        <button onclick="ClientApp.setUserEmail()">決定</button>
+      </div>
     </div>
 
-    <!-- 🎴 トレーディングカード風商品グリッド -->
-    <div id="product-grid" class="product-grid">
-      <!-- JavaScriptで動的生成 -->
+    <div id="shop-section" style="display: none;">
+      <div class="section-title">
+        <h2>商品一覧</h2>
+        <p class="section-sub">ご希望の商品の数量を選択してください（お一人様の上限あり）</p>
+      </div>
+      <div id="product-grid" class="product-grid"></div>
     </div>
   </main>
 
-  <!-- 🛒 固定ボトムバー (カート概要 ＆ 注文へ進む) -->
   <div id="bottom-bar" class="bottom-bar" style="display: none;">
     <div class="cart-summary-info">
       <span class="cart-count-badge" id="cart-total-count">0点</span>
@@ -39,22 +45,19 @@
     </button>
   </div>
 
-  <!-- 📝 2ステップ注文確認モーダル -->
+  <!-- 確認モーダル -->
   <div id="confirm-modal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
       <div class="modal-header">
         <h3>ご注文内容の確認</h3>
         <button class="btn-close" onclick="ClientApp.closeConfirmModal()">✕</button>
       </div>
-      
       <div class="modal-body">
         <ul id="modal-item-list" class="modal-item-list"></ul>
-        
         <div class="modal-total-box">
           <span>合計金額（税込）</span>
           <strong id="modal-total-amount">¥0</strong>
         </div>
-
         <div class="agreement-box">
           <label class="checkbox-label">
             <input type="checkbox" id="chk-agree" onchange="ClientApp.toggleSubmitButton()">
@@ -62,7 +65,6 @@
           </label>
         </div>
       </div>
-
       <div class="modal-footer">
         <button id="btn-submit-order" class="btn-primary-action" onclick="ClientApp.submitOrder()" disabled>
           注文を確定する
@@ -71,36 +73,26 @@
     </div>
   </div>
 
-  <!-- 🏁 注文完了 ＆ QR表示モーダル -->
+  <!-- QR完了モーダル -->
   <div id="success-modal" class="modal-overlay" style="display: none;">
     <div class="modal-card modal-card-success">
-      <div class="success-icon-wrap">
-        <span class="material-icons success-icon">check_circle</span>
-      </div>
+      <div class="success-icon-wrap"><span class="material-icons success-icon">check_circle</span></div>
       <h2>ご注文ありがとうございました！</h2>
       <p class="success-msg">以下のQRコードを各売り場のPOSレジでご提示ください。</p>
-
       <div class="qr-container">
         <div id="qrcode"></div>
         <div id="qr-order-id" class="qr-order-id-text">ORD0000</div>
       </div>
-
-      <div class="qr-instructions">
-        <p>※ スクリーンショット等で保存してレジにお持ちいただいても会計可能です。</p>
-      </div>
-
-      <button class="btn-secondary-action" onclick="window.location.reload()">
-        トップ画面に戻る
-      </button>
+      <button class="btn-secondary-action" onclick="window.location.reload()">トップ画面に戻る</button>
     </div>
   </div>
 
-  <!-- 暗転ローディング -->
   <div id="loading-overlay" class="loading-overlay">
     <div class="spinner"></div>
     <div id="loading-text">読み込み中...</div>
   </div>
 
+  <!-- 外部ライブラリ ＆ スクリプト呼び出し順序の保証 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
