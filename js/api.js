@@ -2,7 +2,7 @@
  * GAS Web API 通信クライアント (GitHub Pages ➔ GAS)
  */
 // ★ご自身でデプロイしたGASの「ウェブアプリURL」に差し替えてください
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/YOUR_EXEC_ID_HERE/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz2uE9jQwYnpHEgEGHiQnvLmOioNnUnUlTcyw9ixVytQu0t27IOnqughK9AVU8IBeUC/exec";
 
 const ApiClient = {
   regIdKey: "LASALLE_POS_REG_ID",
