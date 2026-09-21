@@ -2,7 +2,7 @@
  * 客用 注文画面ロジック
  */
 const state = {
-  email: "user@example.com",
+  userEmail: "user@example.com",
   products: [],
   pastPurchases: {},
   cart: {}
@@ -11,13 +11,18 @@ const state = {
 window.addEventListener("DOMContentLoaded", async () => {
   showLoading("初期データを安全に読み込み中...");
   try {
-    const res = await fetchApi("initContext", { email: state.email });
+    const res = await fetchApi("initContext", { email: state.userEmail });
     state.products = res.products;
     state.pastPurchases = res.pastPurchases || {};
-    document.getElementById("user-badge").innerText = state.email;
+    
+    document.getElementById("user-badge").innerText = state.userEmail;
+    if (res.isStaff) {
+      document.getElementById("admin-link").style.display = "inline-block";
+    }
+    
     renderProducts();
   } catch (err) {
-    alert("初期読込エラー: " + err.message);
+    alert("初期読み込みエラー: " + err.message);
   } finally {
     hideLoading();
   }
@@ -33,7 +38,7 @@ function renderProducts() {
     const totalQty = pastQty + currentQty;
 
     const isSoldOut = prod.stock <= 0;
-    const isFew = prod.stock > 0 && prod.stock <= 5;
+    const isFew = prod.stock > 0 && prod.stock <= (prod.fewThreshold || 5);
     const isMaxLimit = totalQty >= prod.maxLimit;
 
     const card = document.createElement("div");
@@ -41,14 +46,14 @@ function renderProducts() {
     card.innerHTML = `
       <div class="img-wrapper">
         <img src="${prod.imageUrl || 'https://placehold.co/100'}" class="product-img ${isSoldOut ? 'sold-out' : ''}">
-        ${isFew ? `<div class="badge-few">残り${prod.stock}個</div>` : ''}
+        ${isFew ? `<div class="badge-few">残りわずか</div>` : ''}
         ${isSoldOut ? `<div class="sold-out-overlay">SOLD OUT</div>` : ''}
       </div>
       <div class="product-info">
         <div>
           <div class="product-name">${prod.name}</div>
           <div class="product-price">¥${prod.price.toLocaleString()}</div>
-          <div class="product-limit">個人上限: ${prod.maxLimit}個 ${pastQty > 0 ? `(購入済:${pastQty})` : ''}</div>
+          ${pastQty > 0 ? `<div class="product-limit">過去に${pastQty}個購入済み (上限${prod.maxLimit}個)</div>` : `<div class="product-limit">上限: ${prod.maxLimit}個</div>`}
         </div>
         <div class="qty-controller">
           <button class="qty-btn" onclick="updateQty('${prod.id}', -1)" ${currentQty === 0 ? 'disabled' : ''}>-</button>
@@ -80,6 +85,7 @@ function updateCartBar() {
   document.getElementById("cart-total").innerText = `¥${total.toLocaleString()}`;
 }
 
+// 2ステップカート確認 (編集不可・確認のみ)
 function openCartReview() {
   const itemsDiv = document.getElementById("review-items");
   itemsDiv.innerHTML = "";
@@ -92,7 +98,7 @@ function openCartReview() {
     total += subtotal;
 
     itemsDiv.innerHTML += `
-      <div style="display:flex; justify-content:space-between; padding: 8px 0; border-bottom:1px solid #EEE;">
+      <div style="display:flex; justify-content:space-between; padding: 10px 0; border-bottom:1px solid #EEE;">
         <div><b>${p.name}</b> × ${state.cart[id]}</div>
         <div>¥${subtotal.toLocaleString()}</div>
       </div>
@@ -102,24 +108,42 @@ function openCartReview() {
   document.getElementById("review-modal").style.display = "flex";
 }
 
-async function submitOrder() {
-  document.getElementById("review-modal").style.display = "none";
+function closeModal(id) {
+  document.getElementById(id).style.display = "none";
+}
+
+async function submitFinalOrder() {
+  closeModal("review-modal");
   showLoading("在庫を安全に確保中...\n画面を閉じずにお待ちください。");
 
   try {
-    const res = await fetchApi("submitOrder", { email: state.email, cart: state.cart });
+    const res = await fetchApi("submitOrder", { email: state.userEmail, cart: state.cart });
+    
     document.getElementById("res-order-id").innerText = res.orderId;
     document.getElementById("res-total").innerText = `¥${res.totalAmount.toLocaleString()}`;
     
+    const detailsDiv = document.getElementById("res-items-detail");
+    detailsDiv.innerHTML = "";
+    for (const id in state.cart) {
+      const p = state.products.find(item => item.id === id);
+      if (p) {
+        detailsDiv.innerHTML += `<div>・${p.name} × ${state.cart[id]}個</div>`;
+      }
+    }
+
     document.getElementById("qrcode-area").innerHTML = "";
     new QRCode(document.getElementById("qrcode-area"), {
-      text: `${res.orderId}_${res.signature}`,
+      text: `${state.userEmail}_${res.signature}`, // ユーザーID + HMAC署名
       width: 160, height: 160
     });
 
+    // カート状態をリセット
+    state.cart = {};
+    renderProducts();
+
     document.getElementById("success-modal").style.display = "flex";
   } catch (err) {
-    alert("注文処理エラー: " + err.message);
+    alert("注文エラー: " + err.message);
   } finally {
     hideLoading();
   }
