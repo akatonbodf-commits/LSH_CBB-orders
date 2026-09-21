@@ -7,21 +7,17 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body class="pos-body">
 
   <header class="pos-header">
     <div class="header-left">
       <span class="material-icons">point_of_sale</span>
-      <h2>ラ・サールバザー POSレジシステム</h2>
-      <a href="index.html" class="back-link">‹ 注文画面へ</a>
+      <h2>ラ・サールバザー POSレジ</h2>
     </div>
-    <div id="operator-badge" class="user-badge">レジ認証中...</div>
+    <div id="operator-badge" class="user-badge">レジID設定中...</div>
   </header>
 
   <div class="workspace">
-    
-    <!-- 左パネル: カメラスキャン ＆ テンキー手入力 -->
     <div class="left-panel">
       <div class="camera-wipe">
         <video id="preview-video" autoplay playsinline muted></video>
@@ -30,22 +26,18 @@
 
       <div class="manual-search-box">
         <label class="panel-label">注文ID / ユーザーID 手入力</label>
-        <input type="text" id="manual-input" class="input-display" placeholder="ORD0001 または メール" readonly>
+        <input type="text" id="manual-input" class="input-display" placeholder="ORD0001" readonly>
         
-        <!-- 🔢 オンスクリーン・テンキーUI -->
         <div class="numpad-grid">
           <button class="num-btn" onclick="Numpad.press('7')">7</button>
           <button class="num-btn" onclick="Numpad.press('8')">8</button>
           <button class="num-btn" onclick="Numpad.press('9')">9</button>
-          
           <button class="num-btn" onclick="Numpad.press('4')">4</button>
           <button class="num-btn" onclick="Numpad.press('5')">5</button>
           <button class="num-btn" onclick="Numpad.press('6')">6</button>
-          
           <button class="num-btn" onclick="Numpad.press('1')">1</button>
           <button class="num-btn" onclick="Numpad.press('2')">2</button>
           <button class="num-btn" onclick="Numpad.press('3')">3</button>
-          
           <button class="num-btn btn-clear" onclick="Numpad.clear()">C</button>
           <button class="num-btn" onclick="Numpad.press('0')">0</button>
           <button class="num-btn btn-bs" onclick="Numpad.backspace()">⌫</button>
@@ -56,71 +48,57 @@
       </div>
     </div>
 
-    <!-- 中央パネル: 注文・人単位合算詳細カード -->
     <div class="center-panel">
-      <!-- 待機時プレースホルダー -->
       <div id="placeholder-view" class="placeholder-card">
         <span class="material-icons placeholder-icon">qr_code_scanner</span>
-        <p>QRコードをカメラにかざすか、<br>テンキーで注文IDを入力して検索してください。</p>
+        <p>QRコードをカメラにかざすか、<br>テンキーで注文IDを入力してください。</p>
       </div>
 
-      <!-- 他レジ排他衝突バナー -->
       <div id="collision-alert" class="alert-banner" style="display: none;">
         <span class="material-icons">gpp_maybe</span>
-        <span id="collision-text">現在、別のレジ端末がこのお客様を処理中です！</span>
+        <span id="collision-text">他レジで処理中です！</span>
       </div>
 
-      <!-- 注文データカード -->
       <div id="order-card" class="order-huge-card" style="display: none;">
         <div class="card-title-row">
           <div>
             <div id="card-user-id" class="client-email">user@example.com</div>
-            <div id="card-student-info" class="student-info-tag">高2A 15番</div>
+            <div id="card-student-info" class="student-info-tag">学籍情報</div>
           </div>
-          <div id="card-status-badge" class="badge-status">未払いあり</div>
+          <div id="card-status-badge" class="badge-status">未払い</div>
         </div>
-
         <div class="table-wrapper">
           <table class="details-table">
-            <thead>
-              <tr>
-                <th>商品名</th>
-                <th style="text-align: right;">数量</th>
-              </tr>
-            </thead>
+            <thead><tr><th>商品名</th><th style="text-align: right;">数量</th></tr></thead>
             <tbody id="card-items-tbody"></tbody>
           </table>
         </div>
-
         <div class="total-price-box">
-          <span class="total-label">受領・精算合計額</span>
+          <span class="total-label">合計金額</span>
           <span id="card-total-amount" class="total-value">¥0</span>
         </div>
       </div>
     </div>
 
-    <!-- 右パネル: 動的変化メインボタン ＆ 中断ボタン -->
     <div class="right-panel">
       <button id="btn-main-action" class="btn-giant btn-giant-confirm" onclick="RegisterApp.handleMainAction()" disabled>
-        <span class="material-icons" id="main-action-icon" style="font-size:48px;">check_circle</span>
+        <span class="material-icons" style="font-size:48px;">check_circle</span>
         <span id="main-action-label">🟢 会計確定</span>
-        <span id="main-action-sub" style="font-size:12px; opacity:0.85; font-weight:normal;">現金を回収後にタップ</span>
+        <span id="main-action-sub" style="font-size:12px;">現金を回収後にタップ</span>
       </button>
-
       <button id="btn-cancel-action" class="btn-giant btn-giant-cancel" onclick="RegisterApp.handleCancel()" disabled>
         <span class="material-icons" style="font-size:32px;">block</span>
         <span>🔴 注文中断</span>
       </button>
     </div>
-
   </div>
 
-  <!-- 暗転ローディング -->
   <div id="loading-overlay" class="loading-overlay">
     <div class="spinner"></div>
-    <div id="loading-text">データ処理中...</div>
+    <div id="loading-text">処理中...</div>
   </div>
 
+  <!-- スクリプト呼び出し -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
   <script src="js/api.js"></script>
   <script src="js/register.js"></script>
