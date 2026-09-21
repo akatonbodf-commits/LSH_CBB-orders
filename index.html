@@ -7,75 +7,102 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="client-body">
 
-  <header>
-    <h1>ラ・サール学園バザー</h1>
-    <div style="display: flex; gap: 8px; align-items: center;">
-      <a id="admin-link" href="admin.html" class="admin-nav-btn" style="display: none;">POSレジ画面へ</a>
-      <div id="user-badge" class="user-badge">読込中...</div>
+  <header class="client-header">
+    <div class="header-content">
+      <h1>ラ・サール学園バザー 2026</h1>
+      <span id="user-email-badge" class="user-email-tag">取得中...</span>
     </div>
   </header>
 
-  <div class="container" id="product-list"></div>
+  <main class="client-container">
+    <div class="section-title">
+      <h2>商品一覧</h2>
+      <p class="section-sub">ご希望の商品の数量を選択してください（お一人様の上限あり）</p>
+    </div>
 
-  <div class="cart-bar" id="cart-bar">
-    <button class="cart-btn" onclick="openCartReview()">
-      <span class="material-icons">shopping_cart</span>
-      注文内容を確認する (<span id="cart-total">¥0</span>)
+    <!-- 🎴 トレーディングカード風商品グリッド -->
+    <div id="product-grid" class="product-grid">
+      <!-- JavaScriptで動的生成 -->
+    </div>
+  </main>
+
+  <!-- 🛒 固定ボトムバー (カート概要 ＆ 注文へ進む) -->
+  <div id="bottom-bar" class="bottom-bar" style="display: none;">
+    <div class="cart-summary-info">
+      <span class="cart-count-badge" id="cart-total-count">0点</span>
+      <span class="cart-total-price" id="cart-total-price">¥0</span>
+    </div>
+    <button class="btn-checkout" onclick="ClientApp.openConfirmModal()">
+      注文確認へ進む <span class="material-icons">arrow_forward</span>
     </button>
   </div>
 
-  <!-- 🛒 カート内容最終確認モーダル (編集不可・閲覧のみ) -->
-  <div class="modal" id="review-modal">
-    <div class="modal-content">
+  <!-- 📝 2ステップ注文確認モーダル -->
+  <div id="confirm-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
       <div class="modal-header">
-        <h3>🛒 注文内容の最終確認</h3>
-        <span class="material-icons close-btn" onclick="closeModal('review-modal')">close</span>
+        <h3>ご注文内容の確認</h3>
+        <button class="btn-close" onclick="ClientApp.closeConfirmModal()">✕</button>
       </div>
-      <div id="review-items"></div>
-      <div class="modal-total-row">
-        <span>合計金額:</span>
-        <span id="modal-total" class="text-danger">¥0</span>
+      
+      <div class="modal-body">
+        <ul id="modal-item-list" class="modal-item-list"></ul>
+        
+        <div class="modal-total-box">
+          <span>合計金額（税込）</span>
+          <strong id="modal-total-amount">¥0</strong>
+        </div>
+
+        <div class="agreement-box">
+          <label class="checkbox-label">
+            <input type="checkbox" id="chk-agree" onchange="ClientApp.toggleSubmitButton()">
+            <span>注文確定後のキャンセルはできません。当日レジにて現金でお支払いすることに同意します。</span>
+          </label>
+        </div>
       </div>
-      <button class="cart-btn btn-success" onclick="submitFinalOrder()">
-        <span class="material-icons">done_all</span>
-        この内容で注文を確定する
+
+      <div class="modal-footer">
+        <button id="btn-submit-order" class="btn-primary-action" onclick="ClientApp.submitOrder()" disabled>
+          注文を確定する
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🏁 注文完了 ＆ QR表示モーダル -->
+  <div id="success-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card modal-card-success">
+      <div class="success-icon-wrap">
+        <span class="material-icons success-icon">check_circle</span>
+      </div>
+      <h2>ご注文ありがとうございました！</h2>
+      <p class="success-msg">以下のQRコードを各売り場のPOSレジでご提示ください。</p>
+
+      <div class="qr-container">
+        <div id="qrcode"></div>
+        <div id="qr-order-id" class="qr-order-id-text">ORD0000</div>
+      </div>
+
+      <div class="qr-instructions">
+        <p>※ スクリーンショット等で保存してレジにお持ちいただいても会計可能です。</p>
+      </div>
+
+      <button class="btn-secondary-action" onclick="window.location.reload()">
+        トップ画面に戻る
       </button>
     </div>
   </div>
 
-  <!-- 🔒 注文完了 ＆ 偽造防止QR表示モーダル -->
-  <div class="modal" id="success-modal">
-    <div class="modal-content text-center">
-      <span class="material-icons success-icon">check_circle</span>
-      <h2>ご注文が確定しました！</h2>
-      <p class="screenshot-notice">※当日スムーズに引き換えるため、この画面のスクリーンショットを保存してください。</p>
-      
-      <div id="qrcode-area" class="qrcode-container"></div>
-
-      <div class="order-summary-box">
-        <div class="summary-header">
-          <span>注文ID: <b id="res-order-id">-</b></span>
-          <span id="res-total" class="text-danger font-bold">¥0</span>
-        </div>
-        <div id="res-items-detail" class="summary-details"></div>
-      </div>
-
-      <p class="mail-notice">※同じ内容の案内メールをご登録のGmail宛てにも自動送信しました。</p>
-      <button class="cart-btn" onclick="location.reload()">トップに戻る</button>
-    </div>
-  </div>
-
-  <!-- ⏳ 暗転ローディング -->
-  <div id="loading-overlay">
+  <!-- 暗転ローディング -->
+  <div id="loading-overlay" class="loading-overlay">
     <div class="spinner"></div>
-    <div id="loading-text">データを安全に読み込み中...</div>
+    <div id="loading-text">読み込み中...</div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
-  <script src="js/order.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
