@@ -73,3 +73,70 @@ body { background: #F1F5F9; color: #1E293B; font-size: 14px; }
 .loading-overlay { position: fixed; top:0; bottom:0; left:0; right:0; background: rgba(0,0,0,0.7); color: #FFF; z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
 .spinner { width: 40px; height: 40px; border: 4px solid #FFF; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* 客用画面スタイル */
+.client-body { background: #F8FAFC; padding-bottom: 90px; }
+.client-header { background: var(--primary); color: #FFF; padding: 16px 20px; }
+.header-content { display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto; }
+.header-content h1 { font-size: 18px; font-weight: 800; }
+.user-email-tag { font-size: 11px; background: rgba(255,255,255,0.15); padding: 4px 8px; border-radius: 12px; }
+
+.client-container { max-width: 800px; margin: 20px auto; padding: 0 16px; }
+.section-title h2 { font-size: 20px; font-weight: 800; color: #1E293B; }
+.section-sub { font-size: 12px; color: #64748B; margin-top: 4px; margin-bottom: 16px; }
+
+/* 🎴 トレーディングカード風グリッド */
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.trading-card { background: #FFF; border-radius: 16px; border: 1px solid #E2E8F0; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
+.trading-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+.trading-card.sold-out { opacity: 0.6; }
+
+.card-image-wrap { position: relative; width: 100%; aspect-ratio: 4/3; background: #F1F5F9; }
+.card-img { width: 100%; height: 100%; object-fit: cover; }
+.sold-out-badge { position: absolute; top: 10px; right: 10px; background: rgba(217, 48, 37, 0.9); color: #FFF; font-weight: bold; padding: 4px 10px; border-radius: 6px; font-size: 12px; }
+
+.card-content { padding: 14px; display: flex; flex-direction: column; flex: 1; }
+.card-title { font-size: 15px; font-weight: 700; color: #0F172A; margin-bottom: 6px; }
+.card-price { font-size: 18px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+
+.limit-info { font-size: 11px; color: #64748B; background: #F8FAFC; padding: 6px 8px; border-radius: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; }
+.past-qty-tag { color: var(--info); font-weight: bold; }
+
+.card-actions { display: flex; align-items: center; justify-content: space-between; margin-top: auto; background: #F1F5F9; border-radius: 8px; padding: 4px; }
+.btn-qty { width: 36px; height: 36px; border: none; background: #FFF; border-radius: 6px; font-size: 18px; font-weight: bold; color: #0F172A; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.btn-qty:disabled { opacity: 0.3; cursor: not-allowed; }
+.qty-display { font-size: 16px; font-weight: bold; width: 30px; text-align: center; }
+
+/* 🛒 ボトムバー */
+.bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #FFF; border-top: 1px solid #E2E8F0; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); z-index: 100; }
+.cart-summary-info { display: flex; align-items: center; gap: 10px; }
+.cart-count-badge { background: var(--primary); color: #FFF; font-weight: bold; font-size: 12px; padding: 4px 8px; border-radius: 12px; }
+.cart-total-price { font-size: 22px; font-weight: 800; color: var(--danger); }
+.btn-checkout { background: var(--success); color: #FFF; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+/* モーダル */
+.modal-overlay { position: fixed; top: 0; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal-card { background: #FFF; border-radius: 16px; width: 100%; max-width: 440px; padding: 20px; display: flex; flex-direction: column; gap: 16px; max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #E2E8F0; padding-bottom: 12px; }
+.btn-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #64748B; }
+
+.modal-item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.modal-item-row { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; border-bottom: 1px dashed #F1F5F9; }
+
+.modal-total-box { display: flex; justify-content: space-between; align-items: center; background: #FEF2F2; padding: 12px 16px; border-radius: 10px; color: #991B1B; font-size: 16px; }
+.modal-total-box strong { font-size: 24px; color: var(--danger); }
+
+.agreement-box { background: #F8FAFC; padding: 12px; border-radius: 8px; border: 1px solid #E2E8F0; }
+.checkbox-label { display: flex; gap: 10px; font-size: 12px; color: #475569; line-height: 1.5; cursor: pointer; }
+
+.btn-primary-action { width: 100%; background: var(--primary); color: #FFF; border: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
+.btn-primary-action:disabled { background: #CBD5E1; cursor: not-allowed; }
+
+/* QR完了画面 */
+.modal-card-success { text-align: center; }
+.success-icon-wrap { color: var(--success); }
+.success-icon { font-size: 56px; }
+.qr-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; background: #F8FAFC; border-radius: 12px; margin: 12px 0; }
+.qr-order-id-text { margin-top: 10px; font-size: 18px; font-weight: 800; color: var(--primary); letter-spacing: 1px; }
+.qr-instructions { font-size: 11px; color: #64748B; margin-bottom: 12px; }
+.btn-secondary-action { width: 100%; background: #F1F5F9; color: #334155; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
