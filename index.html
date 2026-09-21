@@ -1,528 +1,263 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ラ・サール学園バザー オンライン注文</title>
-  <!-- 🎨 Google Fonts & Material Icons CDN -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  
   <style>
     :root {
       --primary: #1E3A8A;
       --primary-light: #E8F0FE;
       --accent: #E37400;
       --danger: #D93025;
-      --success: #16A34A;
       --text: #202124;
       --bg: #F8F9FA;
       --card-bg: #FFFFFF;
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans JP', sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 110px; -webkit-user-select: none; font-size: 16px; }
-
-    /* 実行委員用クイックナビ */
-    .staff-nav-bar {
-      background-color: #7C3AED; color: white; padding: 10px 16px;
-      text-align: center; font-weight: 700; font-size: 13px;
-      display: none; justify-content: center; align-items: center; gap: 10px;
-    }
-    .staff-nav-link {
-      background: white; color: #7C3AED; padding: 3px 10px;
-      border-radius: 6px; text-decoration: none; font-size: 12px;
-    }
-
-    /* ヘッダー */
-    header {
-      background-color: var(--primary); color: #FFFFFF;
-      padding: 16px 20px; position: sticky; top: 0; z-index: 100;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-      display: flex; align-items: center; justify-content: space-between;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 90px; -webkit-user-select: none; }
+    header { background-color: var(--primary); color: #FFF; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
     header h1 { font-size: 18px; font-weight: 700; }
-    .user-badge {
-      font-size: 12px; background: rgba(255,255,255,0.2);
-      padding: 5px 12px; border-radius: 16px; font-weight: 500;
-      max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-
-    .container { padding: 16px; max-width: 650px; margin: 0 auto; }
-
+    
+    .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+    
     /* 商品カード */
-    .product-card {
-      background: var(--card-bg); border-radius: 16px; padding: 16px;
-      margin-bottom: 16px; display: flex; align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04); border: 1px solid #E5E7EB;
-      position: relative;
-    }
-
-    /* 画像ラッパー & 在庫状態バッジ */
-    .product-img-wrapper {
-      position: relative; width: 100px; height: 100px;
-      margin-right: 16px; flex-shrink: 0; border-radius: 12px; overflow: hidden;
-      background: #E5E7EB;
-    }
-    .product-img {
-      width: 100%; height: 100%; object-fit: cover; transition: filter 0.2s;
-    }
-    /* 売り切れ時のグレーアウト & SOLD OUTタグ */
-    .product-img.sold-out { filter: grayscale(100%); opacity: 0.5; }
-    .sold-out-overlay {
-      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.45); color: #FFFFFF;
-      font-weight: 900; font-size: 13px; letter-spacing: 1px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    /* 残りわずか右上コーナーバッジ */
-    .badge-corner-alert {
-      position: absolute; top: 4px; right: 4px;
-      background: var(--accent); color: #FFFFFF;
-      font-size: 10px; font-weight: 700; padding: 2px 6px;
-      border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-      z-index: 2;
-    }
-
-    .product-info { flex: 1; }
-    .product-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
-    .product-price { font-size: 16px; font-weight: 700; color: #374151; }
-    .limit-info { font-size: 12px; color: #6B7280; margin-top: 4px; }
-
+    .product-card { background: var(--card-bg); border-radius: 16px; padding: 12px; margin-bottom: 16px; display: flex; gap: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid #E5E7EB; }
+    
+    /* 画像コンテナとタグ・SOLD OUT表示 */
+    .img-wrapper { position: relative; width: 100px; height: 100px; flex-shrink: 0; border-radius: 12px; overflow: hidden; background: #EEE; }
+    .product-img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s; }
+    .product-img.sold-out { filter: grayscale(100%); opacity: 0.6; }
+    
+    .badge-few { position: absolute; top: 4px; right: 4px; background: #FFE0B2; color: #E65100; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .sold-out-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); color: #FFF; font-weight: 900; font-size: 14px; display: flex; align-items: center; justify-content: center; letter-spacing: 1px; z-index: 3; }
+    
+    .product-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .product-name { font-size: 16px; font-weight: 700; }
+    .product-price { font-size: 15px; font-weight: 700; color: #4B5563; }
+    .product-limit { font-size: 11px; color: #6B7280; }
+    
     /* 数量コントローラー */
-    .qty-controller {
-      display: flex; align-items: center; background: var(--bg);
-      border-radius: 24px; padding: 4px; gap: 4px; border: 1px solid #E5E7EB;
-    }
-    .qty-btn {
-      width: 36px; height: 36px; border-radius: 50%; border: none;
-      background: #FFF; color: var(--primary); font-weight: bold; font-size: 18px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08); transition: background 0.15s;
-    }
-    .qty-btn:active { background: var(--primary-light); }
-    .qty-btn:disabled { color: #CBD5E1; background: #F1F5F9; box-shadow: none; cursor: not-allowed; }
-    .qty-val { width: 30px; text-align: center; font-weight: 700; font-size: 15px; }
+    .qty-controller { display: flex; align-items: center; background: #F3F4F6; border-radius: 20px; padding: 2px; gap: 4px; align-self: flex-end; }
+    .qty-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: #FFF; color: var(--primary); font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .qty-btn:disabled { color: #D1D5DB; background: #F3F4F6; box-shadow: none; cursor: not-allowed; }
+    .qty-val { width: 28px; text-align: center; font-weight: 700; font-size: 15px; }
 
-    /* 固定ボトムカートバー */
-    .cart-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; background: #FFF;
-      padding: 16px; box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
-      display: flex; align-items: center; justify-content: center; z-index: 90;
-    }
-    .cart-btn {
-      background: var(--primary); color: #FFF; border: none;
-      padding: 14px 28px; border-radius: 28px; font-weight: 700; font-size: 16px;
-      display: flex; align-items: center; gap: 8px; width: 100%; max-width: 650px;
-      justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(30,58,138,0.25);
-    }
-    .cart-btn:active { opacity: 0.9; }
+    /* 下部カートバー */
+    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #FFF; padding: 12px 16px; box-shadow: 0 -4px 12px rgba(0,0,0,0.08); display: none; justify-content: center; z-index: 90; }
+    .cart-btn { background: var(--primary); color: #FFF; border: none; padding: 14px 24px; border-radius: 28px; font-weight: 700; font-size: 16px; width: 100%; max-width: 600px; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
 
-    /* モーダル */
-    .modal {
-      position: fixed; top: 0; bottom: 0; left: 0; right: 0;
-      background: rgba(0,0,0,0.6); z-index: 200; display: none;
-      align-items: flex-end; justify-content: center;
-    }
-    .modal-content {
-      background: #FFF; border-radius: 24px 24px 0 0; width: 100%; max-width: 650px;
-      max-height: 85vh; overflow-y: auto; padding: 24px; animation: slideUp 0.25s ease-out;
-    }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-    .modal-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 20px; border-bottom: 1px solid #E5E7EB; padding-bottom: 12px;
-    }
-    .modal-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-
-    .review-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 14px 0; border-bottom: 1px solid #F3F4F6;
-    }
-
-    /* 完了カード & QR表示 */
-    .success-card { text-align: center; padding: 10px 0; }
-    .qr-area {
-      background: #FFF; padding: 16px; display: inline-block;
-      border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); margin: 16px 0;
-    }
-    .summary-box {
-      background: var(--primary-light); border-radius: 12px; padding: 16px;
-      text-align: left; margin-bottom: 20px;
-    }
-    .summary-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
-
-    /* ローディング / 送信中全画面暗転オーバーレイ */
-    #loading-overlay {
-      position: fixed; top: 0; bottom: 0; left: 0; right: 0;
-      background: rgba(0, 0, 0, 0.75); color: #FFF; z-index: 300;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-    }
-    .spinner {
-      width: 44px; height: 44px; border: 4px solid rgba(255,255,255,0.3);
-      border-top-color: #FFFFFF; border-radius: 50%; animation: spin 0.8s linear infinite;
-    }
+    /* モーダル & 暗転オーバーレイ */
+    .modal { position: fixed; top: 0; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+    .modal-content { background: #FFF; border-radius: 20px 20px 0 0; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; padding: 20px; }
+    
+    #loading-overlay { position: fixed; top: 0; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); color: #FFF; z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #FFF; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <!-- 実行委員権限保有者用バー -->
-  <div class="staff-nav-bar" id="staff-quick-nav">
-    <span>🔑 実行委員アカウント認証</span>
-    <a href="?page=admin" target="_top" class="staff-nav-link">POSレジ画面へ</a>
-  </div>
-
-  <!-- ヘッダー -->
   <header>
     <h1>ラ・サール学園バザー</h1>
-    <div class="user-badge" id="user-email-display">認証確認中...</div>
+    <div id="user-badge" style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px;">読込中...</div>
   </header>
 
-  <!-- メイン商品リスト -->
-  <div class="container" id="product-container"></div>
+  <div class="container" id="product-list"></div>
 
-  <!-- 下部固定カートバー -->
-  <div class="cart-bar" id="cart-bar" style="display: none;">
-    <button class="cart-btn" onclick="openReviewModal()">
+  <div class="cart-bar" id="cart-bar">
+    <button class="cart-btn" onclick="openCartReview()">
       <span class="material-icons">shopping_cart</span>
-      カートを確認する (<span id="bar-total-amount">¥0</span>)
+      注文内容を確認する (<span id="cart-total">¥0</span>)
     </button>
   </div>
 
-  <!-- 【ステップ1】カート最終確認モーダル -->
+  <!-- 確認モーダル -->
   <div class="modal" id="review-modal">
     <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">
-          <span class="material-icons" style="color:var(--primary);">shopping_bag</span>
-          カート内容の確認・微調整
-        </div>
-        <span class="material-icons" style="cursor:pointer; font-size:28px; color:#6B7280;" onclick="closeModal('review-modal')">close</span>
-      </div>
-      <div id="review-list-container"></div>
-      <div style="margin: 20px 0; display:flex; justify-content:space-between; font-weight:700; font-size:18px;">
+      <h3 style="margin-bottom: 16px;">🛒 注文内容の最終確認</h3>
+      <div id="review-items"></div>
+      <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; margin: 20px 0;">
         <span>合計金額:</span>
-        <span id="modal-total-amount" style="color:var(--danger);">¥0</span>
+        <span id="modal-total" style="color: var(--danger);">¥0</span>
       </div>
-      <button class="cart-btn" style="background:var(--success);" onclick="submitFinalOrder()">
-        <span class="material-icons">done_all</span>
-        この内容で注文を確定する
-      </button>
+      <button class="cart-btn" style="background: #16A34A;" onclick="submitOrder()">この内容で注文を確定する</button>
     </div>
   </div>
 
-  <!-- 【ステップ2】注文完了 ＆ 偽造防止QRモーダル -->
+  <!-- 完了モーダル -->
   <div class="modal" id="success-modal" style="align-items: center; padding: 16px;">
-    <div class="modal-content" style="border-radius: 20px; max-height: 90vh;">
-      <div class="success-card">
-        <span class="material-icons" style="color:var(--success); font-size: 56px;">check_circle</span>
-        <h2 style="font-size:20px; margin-top:8px; font-weight:700;">ご注文が確定しました！</h2>
-        <p style="font-size:13px; color:#4B5563; margin-top:6px; line-height:1.5;">
-          当日レジでスムーズに精算を行うため、この画面の<br><b style="color:var(--danger);">スクリーンショット（キャプチャ）</b>を必ず保存してください。
-        </p>
-        
-        <!-- QRコード生成領域 -->
-        <div class="qr-area" id="qrcode"></div>
-
-        <div class="summary-box">
-          <div class="summary-row" style="border-bottom: 1px solid #BCD0F7; padding-bottom: 8px; margin-bottom: 10px; font-weight:700; font-size:15px;">
-            <span>注文ID: <span id="res-order-id">-</span></span>
-            <span style="color:var(--danger);" id="res-total-amount">¥0</span>
-          </div>
-          <div id="res-details-list" style="font-size: 13px; line-height: 1.8;"></div>
-        </div>
-
-        <p style="font-size:12px; color:#6B7280; margin-bottom: 16px;">※注文完了通知メールを登録Gmail宛てにも同時送信しました。</p>
-        <a href="https://mail.google.com" target="_blank" class="cart-btn" style="background:var(--primary); text-decoration: none;">
-          <span class="material-icons">mail</span>
-          Gmailを開く
-        </a>
+    <div class="modal-content" style="border-radius: 20px; text-align: center;">
+      <span class="material-icons" style="color: #16A34A; font-size: 56px;">check_circle</span>
+      <h2>ご注文が確定しました！</h2>
+      <p style="font-size: 12px; color: var(--danger); margin: 8px 0; font-weight: 700;">※この画面のスクリーンショットを必ず保存してください。</p>
+      <div id="qrcode-area" style="margin: 16px auto; display: inline-block;"></div>
+      <div style="background: var(--primary-light); padding: 12px; border-radius: 10px; text-align: left; font-size: 14px; margin-bottom: 16px;">
+        <div>注文ID: <b id="res-order-id">-</b></div>
+        <div>合計金額: <b id="res-total">¥0</b></div>
       </div>
+      <button class="cart-btn" onclick="location.reload()">トップに戻る</button>
     </div>
   </div>
 
-  <!-- 全画面ブロック・暗転ローディングオーバーレイ -->
+  <!-- 暗転スピナー -->
   <div id="loading-overlay">
     <div class="spinner"></div>
-    <div id="loading-text" style="font-size:15px; font-weight:500; text-align:center; line-height:1.5;">データを安全に読み込み中...</div>
+    <div id="loading-text" style="font-size: 14px; font-weight: 700;">データを安全に読み込み中...</div>
   </div>
 
-  <!-- QRCode.js ライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
   <script>
-    // システム状態管理
+    const GAS_API_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"; // GASのWeb App URL
+    
     let state = {
-      userEmail: "",
-      existsPastOrder: false,
-      orderId: "",
-      pastCart: {},
-      currentCart: {},
-      masterProducts: []
+      email: "user@example.com",
+      products: [],
+      pastPurchases: {},
+      cart: {}
     };
 
-    // 初期起動処理（画面アクセス時の自動コンテキスト読み込み）
-    window.addEventListener("DOMContentLoaded", () => {
-      showOverlay("初期データを安全にロード中...");
-      
-      google.script.run
-        .withSuccessHandler(ctx => {
-          state.userEmail = ctx.userEmail;
-          state.existsPastOrder = ctx.exists;
-          state.orderId = ctx.orderId;
-          state.pastCart = ctx.pastCart || {};
-          document.getElementById("user-email-display").innerText = ctx.userEmail;
-
-          if (ctx.userEmail) {
-            checkStaffPrivilege(ctx.userEmail);
-          }
-          loadProducts();
-        })
-        .withFailureHandler(err => {
-          hideOverlay();
-          alert("通信エラーが発生しました: " + err);
-        })
-        .loadClientContext();
+    // 初期化処理
+    window.addEventListener("DOMContentLoaded", async () => {
+      showLoading("初期データを安全に読み込み中...");
+      try {
+        const res = await fetchApi("initContext", { email: state.email });
+        if (!res.success) throw new Error(res.message);
+        
+        state.products = res.products;
+        state.pastPurchases = res.pastPurchases || {};
+        document.getElementById("user-badge").innerText = state.email;
+        renderProducts();
+      } catch (err) {
+        alert("初期化エラー: " + err.message);
+      } finally {
+        hideLoading();
+      }
     });
 
-    // 実行委員権限チェック
-    function checkStaffPrivilege(email) {
-      google.script.run
-        .withSuccessHandler(isStaffUser => {
-          if (isStaffUser) {
-            document.getElementById("staff-quick-nav").style.display = "flex";
-          }
-        })
-        .isStaff(email);
+    // 共通 Fetch ラッパー
+    async function fetchApi(action, payload) {
+      const response = await fetch(GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action, ...payload })
+      });
+      return await response.json();
     }
 
-    // 商品マスタ取得
-    function loadProducts() {
-      google.script.run
-        .withSuccessHandler(products => {
-          state.masterProducts = products;
-          renderProductGrid();
-          hideOverlay(); // 全ロード完了後に暗転解除
-        })
-        .withFailureHandler(err => {
-          hideOverlay();
-          alert("商品マスタのロードに失敗しました: " + err);
-        })
-        .getActiveProducts();
-    }
-
-    // ドライブ画像URL変換プロキシ
-    function convertDriveUrl(rawUrl) {
-      if (!rawUrl) return "https://placehold.co/200x200?text=No+Image";
-      const matches = rawUrl.match(/[-\w]{25,}/);
-      if (matches && (rawUrl.includes("drive.google.com") || rawUrl.includes("docs.google.com"))) {
-        return "https://drive.google.com/uc?export=view&id=" + matches[0];
-      }
-      return rawUrl;
-    }
-
-    // 商品一覧の動的レンダリング
-    function renderProductGrid() {
-      const container = document.getElementById("product-container");
+    // 商品一覧描画
+    function renderProducts() {
+      const container = document.getElementById("product-list");
       container.innerHTML = "";
 
-      state.masterProducts.forEach(prod => {
-        const pastQty = state.pastCart[prod.id] || 0;
-        const currentQty = state.currentCart[prod.id] || 0;
+      state.products.forEach(prod => {
+        const pastQty = state.pastPurchases[prod.id] || 0;
+        const currentQty = state.cart[prod.id] || 0;
         const totalQty = pastQty + currentQty;
 
-        const isSoldOut = prod.stockLimit <= 0;
-        const isFewStock = !isSoldOut && prod.stockLimit <= 5;
-        const isMaxLimitReached = totalQty >= prod.maxLimitPerUser;
+        const isSoldOut = prod.stock <= 0;
+        const isFew = prod.stock > 0 && prod.stock <= 5;
+        const isMaxLimit = totalQty >= prod.maxLimit;
 
         const card = document.createElement("div");
         card.className = "product-card";
-        const imgUrl = convertDriveUrl(prod.imageUrl);
 
-        // 画像領域の構造決定（売り切れのグレーアウト overlay と 残りわずかタグ）
-        let imgWrapperHtml = '<div class="product-img-wrapper">';
-        if (isSoldOut) {
-          imgWrapperHtml += `<img src="${imgUrl}" class="product-img sold-out" alt="${prod.name}">`;
-          imgWrapperHtml += '<div class="sold-out-overlay">SOLD OUT</div>';
-        } else {
-          imgWrapperHtml += `<img src="${imgUrl}" class="product-img" alt="${prod.name}">`;
-          if (isFewStock) {
-            imgWrapperHtml += `<div class="badge-corner-alert">残り${prod.stockLimit}個</div>`;
-          }
-        }
-        imgWrapperHtml += '</div>';
-
-        // 動的ボタン非活性判定
-        const disableAddBtn = isSoldOut || isMaxLimitReached || (currentQty >= prod.stockLimit);
-
-        card.innerHTML = 
-          imgWrapperHtml +
-          '<div class="product-info">' +
-            `<div class="product-name">${prod.name}</div>` +
-            `<div class="product-price">¥${prod.price.toLocaleString()}</div>` +
-            '<div class="limit-info">' +
-              `上限: ${prod.maxLimitPerUser}個 ` + (pastQty > 0 ? `<br>(過去に${pastQty}個購入済)` : '') +
-            '</div>' +
-          '</div>' +
-          '<div class="qty-controller">' +
-            `<button class="qty-btn" onclick="updateQty('${prod.id}', -1)" ${currentQty === 0 ? 'disabled' : ''}>−</button>` +
-            `<div class="qty-val">${currentQty}</div>` +
-            `<button class="qty-btn" onclick="updateQty('${prod.id}', 1)" ${disableAddBtn ? 'disabled' : ''}>＋</button>` +
-          '</div>';
-
+        card.innerHTML = `
+          <div class="img-wrapper">
+            <img src="${prod.imageUrl || 'https://placehold.co/100'}" class="product-img ${isSoldOut ? 'sold-out' : ''}">
+            ${isFew ? `<div class="badge-few">残り${prod.stock}個</div>` : ''}
+            ${isSoldOut ? `<div class="sold-out-overlay">SOLD OUT</div>` : ''}
+          </div>
+          <div class="product-info">
+            <div>
+              <div class="product-name">${prod.name}</div>
+              <div class="product-price">¥${prod.price.toLocaleString()}</div>
+              <div class="product-limit">上限: ${prod.maxLimit}個 ${pastQty > 0 ? `(購入済:${pastQty})` : ''}</div>
+            </div>
+            <div class="qty-controller">
+              <button class="qty-btn" onclick="updateQty('${prod.id}', -1)" ${currentQty === 0 ? 'disabled' : ''}>-</button>
+              <div class="qty-val">${currentQty}</div>
+              <button class="qty-btn" onclick="updateQty('${prod.id}', 1)" ${(isSoldOut || isMaxLimit) ? 'disabled' : ''}>+</button>
+            </div>
+          </div>
+        `;
         container.appendChild(card);
       });
-
       updateCartBar();
     }
 
-    // 数量の更新制御
-    function updateQty(productId, delta) {
-      const currentQty = state.currentCart[productId] || 0;
-      const newQty = currentQty + delta;
-      
-      if (newQty <= 0) {
-        delete state.currentCart[productId];
-      } else {
-        state.currentCart[productId] = newQty;
-      }
-
-      renderProductGrid();
-      if (document.getElementById("review-modal").style.display === "flex") {
-        openReviewModal();
-      }
+    function updateQty(id, delta) {
+      const current = state.cart[id] || 0;
+      const next = current + delta;
+      if (next <= 0) delete state.cart[id];
+      else state.cart[id] = next;
+      renderProducts();
     }
 
-    // 固定カートバーの金額計算・更新
     function updateCartBar() {
-      let totalAmount = 0, totalItemCount = 0;
-      for (const pId in state.currentCart) {
-        const prod = state.masterProducts.find(p => p.id === pId);
-        if (prod) {
-          totalAmount += prod.price * state.currentCart[pId];
-          totalItemCount += state.currentCart[pId];
-        }
+      let total = 0, count = 0;
+      for (const id in state.cart) {
+        const p = state.products.find(item => item.id === id);
+        if (p) { total += p.price * state.cart[id]; count += state.cart[id]; }
       }
-
       const bar = document.getElementById("cart-bar");
-      if (totalItemCount > 0) {
-        bar.style.display = "flex";
-        document.getElementById("bar-total-amount").innerText = "¥" + totalAmount.toLocaleString();
-      } else {
-        bar.style.display = "none";
-      }
+      bar.style.display = count > 0 ? "flex" : "none";
+      document.getElementById("cart-total").innerText = `¥${total.toLocaleString()}`;
     }
 
-    // カート確認モーダル起動
-    function openReviewModal() {
-      const listContainer = document.getElementById("review-list-container");
-      listContainer.innerHTML = "";
-      let totalAmount = 0, hasItems = false;
+    function openCartReview() {
+      const itemsDiv = document.getElementById("review-items");
+      itemsDiv.innerHTML = "";
+      let total = 0;
 
-      for (const pId in state.currentCart) {
-        const prod = state.masterProducts.find(p => p.id === pId);
-        if (!prod) continue;
-        hasItems = true;
+      for (const id in state.cart) {
+        const p = state.products.find(item => item.id === id);
+        if (!p) continue;
+        const subtotal = p.price * state.cart[id];
+        total += subtotal;
 
-        const currentQty = state.currentCart[pId];
-        const itemAmount = prod.price * currentQty;
-        totalAmount += itemAmount;
-
-        const pastQty = state.pastCart[pId] || 0;
-        const totalQty = pastQty + currentQty;
-        const disableAddBtn = (prod.stockLimit <= 0) || (totalQty >= prod.maxLimitPerUser) || (currentQty >= prod.stockLimit);
-
-        const row = document.createElement("div");
-        row.className = "review-item";
-        row.innerHTML = 
-          '<div>' +
-            `<div style="font-weight:700; font-size:15px;">${prod.name}</div>` +
-            `<div style="font-weight:700; color:var(--primary); margin-top:2px;">¥${itemAmount.toLocaleString()}</div>` +
-          '</div>' +
-          '<div class="qty-controller">' +
-            `<button class="qty-btn" onclick="updateQty('${prod.id}', -1)">−</button>` +
-            `<div class="qty-val">${currentQty}</div>` +
-            `<button class="qty-btn" onclick="updateQty('${prod.id}', 1)" ${disableAddBtn ? 'disabled' : ''}>＋</button>` +
-          '</div>';
-        listContainer.appendChild(row);
+        itemsDiv.innerHTML += `
+          <div style="display:flex; justify-size:space-between; padding: 8px 0; border-bottom:1px solid #EEE;">
+            <div><b>${p.name}</b> × ${state.cart[id]}</div>
+            <div>¥${subtotal.toLocaleString()}</div>
+          </div>
+        `;
       }
-
-      if (!hasItems) {
-        closeModal("review-modal");
-        return;
-      }
-
-      document.getElementById("modal-total-amount").innerText = "¥" + totalAmount.toLocaleString();
+      document.getElementById("modal-total").innerText = `¥${total.toLocaleString()}`;
       document.getElementById("review-modal").style.display = "flex";
     }
 
-    function closeModal(id) {
-      document.getElementById(id).style.display = "none";
+    async function submitOrder() {
+      document.getElementById("review-modal").style.display = "none";
+      showLoading("在庫を安全に確保中...\n画面を閉じずにお待ちください。");
+
+      try {
+        const res = await fetchApi("submitOrder", { email: state.email, cart: state.cart });
+        if (!res.success) throw new Error(res.message);
+
+        document.getElementById("res-order-id").innerText = res.orderId;
+        document.getElementById("res-total").innerText = `¥${res.totalAmount.toLocaleString()}`;
+        
+        // QR生成
+        document.getElementById("qrcode-area").innerHTML = "";
+        new QRCode(document.getElementById("qrcode-area"), {
+          text: `${res.orderId}_${res.signature}`,
+          width: 160, height: 160
+        });
+
+        document.getElementById("success-modal").style.display = "flex";
+      } catch (err) {
+        alert("注文エラー: " + err.message);
+      } finally {
+        hideLoading();
+      }
     }
 
-    // 注文送信（送信中暗転 & 二重送信防止）
-    function submitFinalOrder() {
-      closeModal("review-modal");
-      showOverlay("在庫を安全に確保中...<br>画面を閉じずにお待ちください。");
-
-      google.script.run
-        .withSuccessHandler(res => {
-          hideOverlay();
-          if (res.success) {
-            document.getElementById("res-order-id").innerText = res.orderId;
-            document.getElementById("res-total-amount").innerText = "¥" + res.totalAmount.toLocaleString();
-            
-            const detailsListContainer = document.getElementById("res-details-list");
-            detailsListContainer.innerHTML = "";
-
-            for (const pId in state.currentCart) {
-              const prod = state.masterProducts.find(p => p.id === pId);
-              if (prod) {
-                const row = document.createElement("div");
-                row.style.display = "flex";
-                row.style.justifyContent = "space-between";
-                row.innerHTML = `<span>・${prod.name}</span><span>${state.currentCart[pId]}個</span>`;
-                detailsListContainer.appendChild(row);
-              }
-            }
-
-            // 偽造防止署名入りQRコード生成
-            const qrPayload = res.orderId + "_" + res.signature;
-            document.getElementById("qrcode").innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), {
-              text: qrPayload,
-              width: 170,
-              height: 170,
-              colorDark : "#1E3A8A",
-              colorLight : "#FFFFFF",
-              correctLevel : QRCode.CorrectLevel.H
-            });
-
-            document.getElementById("success-modal").style.display = "flex";
-
-            // カート変数をクリアし再描画
-            state.currentCart = {};
-            renderProductGrid();
-          } else {
-            alert("⚠️ 注文エラー:\n" + res.message);
-          }
-        })
-        .withFailureHandler(err => {
-          hideOverlay();
-          alert("サーバーとの通信に失敗しました: " + err);
-        })
-        .submitOrderFromClient(state.currentCart);
-    }
-
-    function showOverlay(text) {
-      document.getElementById("loading-text").innerHTML = text;
+    function showLoading(text) {
+      document.getElementById("loading-text").innerText = text;
       document.getElementById("loading-overlay").style.display = "flex";
     }
-
-    function hideOverlay() {
+    function hideLoading() {
       document.getElementById("loading-overlay").style.display = "none";
     }
   </script>
