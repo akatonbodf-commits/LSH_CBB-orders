@@ -1,0 +1,123 @@
+:root {
+  --primary: #1E3A8A;
+  --primary-light: #E8F0FE;
+  --success: #16A34A;
+  --info: #0284C7;
+  --danger: #D93025;
+  --text: #202124;
+  --bg: #F8F9FA;
+  --card-bg: #FFFFFF;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+body { background-color: var(--bg); color: var(--text); padding-bottom: 90px; -webkit-user-select: none; }
+
+header {
+  background-color: var(--primary);
+  color: #FFF;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+header h1 { font-size: 18px; font-weight: 700; }
+
+.container { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+/* 商品カード */
+.product-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  border: 1px solid #E5E7EB;
+}
+
+/* 画像エリア仕様（残りわずかタグ / SOLD OUTグレーアウト） */
+.img-wrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #EEE;
+}
+.product-img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s; }
+.product-img.sold-out { filter: grayscale(100%); opacity: 0.5; }
+
+.badge-few {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #FFE0B2;
+  color: #E65100;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.sold-out-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  color: #FFF;
+  font-weight: 900;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 1px;
+  z-index: 3;
+}
+
+.product-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.product-name { font-size: 16px; font-weight: 700; }
+.product-price { font-size: 15px; font-weight: 700; color: #4B5563; }
+.product-limit { font-size: 11px; color: #6B7280; }
+
+/* 数量コントローラー */
+.qty-controller { display: flex; align-items: center; background: #F3F4F6; border-radius: 20px; padding: 2px; gap: 4px; align-self: flex-end; }
+.qty-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: #FFF; color: var(--primary); font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.qty-btn:disabled { color: #D1D5DB; background: #F3F4F6; box-shadow: none; cursor: not-allowed; }
+.qty-val { width: 28px; text-align: center; font-weight: 700; font-size: 15px; }
+
+/* カートバー */
+.cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #FFF; padding: 12px 16px; box-shadow: 0 -4px 12px rgba(0,0,0,0.08); display: none; justify-content: center; z-index: 90; }
+.cart-btn { background: var(--primary); color: #FFF; border: none; padding: 14px 24px; border-radius: 28px; font-weight: 700; font-size: 16px; width: 100%; max-width: 600px; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
+
+/* モーダル ＆ 全画面暗転オーバレイ */
+.modal { position: fixed; top: 0; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+.modal-content { background: #FFF; border-radius: 20px 20px 0 0; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; padding: 20px; }
+
+#loading-overlay { position: fixed; top: 0; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); color: #FFF; z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.spinner { width: 40px; height: 40px; border: 4px solid #FFF; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* POSレジ用レイアウト */
+.workspace { display: flex; height: calc(100vh - 48px); }
+.left-panel { width: 320px; background: #0F172A; color: #FFF; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.camera-box { width: 100%; aspect-ratio: 4/3; background: #1E293B; border-radius: 8px; overflow: hidden; }
+
+.tenkey-display { display: flex; align-items: center; background: #1E293B; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; font-size: 18px; font-weight: 700; color: #38BDF8; }
+.tenkey-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.key-btn { background: #334155; color: #FFF; border: none; padding: 14px; border-radius: 6px; font-size: 18px; font-weight: 700; cursor: pointer; }
+
+.center-panel { flex: 1; padding: 20px; overflow-y: auto; }
+.order-card { background: #FFF; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+.right-panel { width: 280px; background: #FFF; border-left: 1px solid #E2E8F0; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.btn-main { width: 100%; flex: 1; border: none; border-radius: 16px; color: #FFF; font-size: 22px; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.btn-pay { background: var(--success); }
+.btn-deliver { background: var(--info); }
+.btn-main:disabled { background: #CBD5E1; cursor: not-allowed; }
+.btn-cancel { height: 80px; background: #EF4444; color: #FFF; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
