@@ -3,78 +3,125 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>【店員レジ】ラ・サール学園バザー POS</title>
+  <title>【店員POSレジ】ラ・サール学園バザー</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body class="pos-body">
 
   <header class="pos-header">
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <h2>POSレジ管理</h2>
-      <a href="index.html" class="back-to-shop-btn">‹ 注文画面へ戻る</a>
+    <div class="header-left">
+      <span class="material-icons">point_of_sale</span>
+      <h2>ラ・サールバザー POSレジシステム</h2>
+      <a href="index.html" class="back-link">‹ 注文画面へ</a>
     </div>
     <div id="operator-badge" class="user-badge">レジ認証中...</div>
   </header>
 
   <div class="workspace">
-    <!-- 左パネル: カメラスキャン ＆ 手入力 -->
+    
+    <!-- 左パネル: カメラスキャン ＆ テンキー手入力 -->
     <div class="left-panel">
-      <div class="camera-box">
-        <video id="video-preview" autoplay playsinline muted></video>
-        <canvas id="camera-canvas" hidden></canvas>
-        <div id="scan-feedback" class="scan-feedback"></div>
+      <div class="camera-wipe">
+        <video id="preview-video" autoplay playsinline muted></video>
+        <div class="scan-overlay" id="scan-feedback"></div>
       </div>
-      <div>
-        <label class="input-label">手入力検索 (ユーザーID / 注文ID)</label>
-        <div class="input-group">
-          <input type="text" id="manual-id-input" placeholder="例: user@example.com / ORD0001">
-          <button onclick="submitManualSearch()" class="btn-search">検索</button>
+
+      <div class="manual-search-box">
+        <label class="panel-label">注文ID / ユーザーID 手入力</label>
+        <input type="text" id="manual-input" class="input-display" placeholder="ORD0001 または メール" readonly>
+        
+        <!-- 🔢 オンスクリーン・テンキーUI -->
+        <div class="numpad-grid">
+          <button class="num-btn" onclick="Numpad.press('7')">7</button>
+          <button class="num-btn" onclick="Numpad.press('8')">8</button>
+          <button class="num-btn" onclick="Numpad.press('9')">9</button>
+          
+          <button class="num-btn" onclick="Numpad.press('4')">4</button>
+          <button class="num-btn" onclick="Numpad.press('5')">5</button>
+          <button class="num-btn" onclick="Numpad.press('6')">6</button>
+          
+          <button class="num-btn" onclick="Numpad.press('1')">1</button>
+          <button class="num-btn" onclick="Numpad.press('2')">2</button>
+          <button class="num-btn" onclick="Numpad.press('3')">3</button>
+          
+          <button class="num-btn btn-clear" onclick="Numpad.clear()">C</button>
+          <button class="num-btn" onclick="Numpad.press('0')">0</button>
+          <button class="num-btn btn-bs" onclick="Numpad.backspace()">⌫</button>
         </div>
+        <button class="btn-numpad-submit" onclick="Numpad.submit()">
+          <span class="material-icons">search</span> 検索実行
+        </button>
       </div>
     </div>
 
-    <!-- 中央パネル: 注文・合算詳細表示 -->
+    <!-- 中央パネル: 注文・人単位合算詳細カード -->
     <div class="center-panel">
-      <div id="placeholder" class="placeholder-box">
-        <span class="material-icons">qr_code_scanner</span>
-        <p>QRコードをカメラにかざすか、ユーザーID/注文IDを手入力してください。</p>
+      <!-- 待機時プレースホルダー -->
+      <div id="placeholder-view" class="placeholder-card">
+        <span class="material-icons placeholder-icon">qr_code_scanner</span>
+        <p>QRコードをカメラにかざすか、<br>テンキーで注文IDを入力して検索してください。</p>
       </div>
 
-      <div id="order-card" class="order-card" style="display: none;">
-        <div class="card-header">
+      <!-- 他レジ排他衝突バナー -->
+      <div id="collision-alert" class="alert-banner" style="display: none;">
+        <span class="material-icons">gpp_maybe</span>
+        <span id="collision-text">現在、別のレジ端末がこのお客様を処理中です！</span>
+      </div>
+
+      <!-- 注文データカード -->
+      <div id="order-card" class="order-huge-card" style="display: none;">
+        <div class="card-title-row">
           <div>
-            <h3 id="card-user-id" class="text-primary">user@example.com</h3>
-            <span id="card-status-badge" class="badge-status">未払いあり</span>
+            <div id="card-user-id" class="client-email">user@example.com</div>
+            <div id="card-student-info" class="student-info-tag">高2A 15番</div>
           </div>
-          <div id="card-student-info" class="text-muted font-bold">高2A 15番</div>
+          <div id="card-status-badge" class="badge-status">未払いあり</div>
         </div>
 
-        <div id="card-items" class="card-items-container"></div>
+        <div class="table-wrapper">
+          <table class="details-table">
+            <thead>
+              <tr>
+                <th>商品名</th>
+                <th style="text-align: right;">数量</th>
+              </tr>
+            </thead>
+            <tbody id="card-items-tbody"></tbody>
+          </table>
+        </div>
 
-        <div class="total-box">
-          <span class="total-label">お会計 合計受領額</span>
-          <span id="card-total" class="total-amount">¥0</span>
+        <div class="total-price-box">
+          <span class="total-label">受領・精算合計額</span>
+          <span id="card-total-amount" class="total-value">¥0</span>
         </div>
       </div>
     </div>
 
-    <!-- 右パネル: 3大操作ボタン -->
+    <!-- 右パネル: 動的変化メインボタン ＆ 中断ボタン -->
     <div class="right-panel">
-      <button class="btn-main btn-pay" id="btn-pay" onclick="handlePayment()" disabled>
-        <span class="material-icons">check_circle</span>
-        <span>🟢 会計確定</span>
+      <button id="btn-main-action" class="btn-giant btn-giant-confirm" onclick="RegisterApp.handleMainAction()" disabled>
+        <span class="material-icons" id="main-action-icon" style="font-size:48px;">check_circle</span>
+        <span id="main-action-label">🟢 会計確定</span>
+        <span id="main-action-sub" style="font-size:12px; opacity:0.85; font-weight:normal;">現金を回収後にタップ</span>
       </button>
-      <button class="btn-main btn-deliver" id="btn-deliver" onclick="handleDelivery()" disabled>
-        <span class="material-icons">local_shipping</span>
-        <span>🔵 引き渡し完了</span>
+
+      <button id="btn-cancel-action" class="btn-giant btn-giant-cancel" onclick="RegisterApp.handleCancel()" disabled>
+        <span class="material-icons" style="font-size:32px;">block</span>
+        <span>🔴 注文中断</span>
       </button>
-      <button class="btn-cancel" id="btn-cancel" onclick="handleCancelLock()" disabled>🔴 注文中断</button>
     </div>
+
+  </div>
+
+  <!-- 暗転ローディング -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div id="loading-text">データ処理中...</div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
-  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/register.js"></script>
 </body>
