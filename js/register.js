@@ -1,12 +1,11 @@
 /**
- * 店員用 POSレジ画面コントローラー (有限状態マシン ＆ 動的ボタン遷移)
+ * 店員用 POSレジ画面コントローラー (完全修正版)
  */
 
-// 1. 有限状態マシン (State Machine)
 const STATES = {
-  WAITING: "WAITING",           // 待機中 (カメラ可動)
-  LOCKED_UNPAID: "LOCKED_UNPAID", // 未払いデータ表示中 (レジロック保持)
-  LOCKED_PAID: "LOCKED_PAID"      // 会計完了・引換待機中 (動的変化後)
+  WAITING: "WAITING",
+  LOCKED_UNPAID: "LOCKED_UNPAID",
+  LOCKED_PAID: "LOCKED_PAID"
 };
 
 const RegisterApp = {
@@ -29,9 +28,12 @@ const RegisterApp = {
     }
   },
 
-  // カメラ解析ループ
   initCamera() {
     const video = document.getElementById("preview-video");
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.warn("カメラ非対応環境です。");
+      return;
+    }
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
       .then(stream => {
         video.srcObject = stream;
@@ -39,7 +41,7 @@ const RegisterApp = {
         video.play();
         requestAnimationFrame(() => this.tickCamera());
       })
-      .catch(err => console.warn("カメラ起動不可:", err));
+      .catch(err => console.warn("カメラ起動失敗:", err));
   },
 
   tickCamera() {
@@ -77,7 +79,9 @@ const RegisterApp = {
   },
 
   async searchUserOrders(userId, signature) {
+    this.hideCollisionAlert();
     showLoading("注文データを照会 ＆ ロック中...");
+
     try {
       const data = await ApiClient.request("searchOrdersByUserId", { userId, signature });
       this.activeUserId = data.userId;
@@ -89,21 +93,35 @@ const RegisterApp = {
         this.transitionTo(STATES.LOCKED_PAID);
       }
     } catch (err) {
-      alert("照会エラー: " + err.message);
+      // 🔒 【修正点】他レジ衝突（排他ロックエラー）の判定とバナー表示
+      if (err.message && err.message.includes("処理中")) {
+        this.showCollisionAlert(err.message);
+      } else {
+        alert("照会エラー: " + err.message);
+      }
       this.resetToWaiting();
     } finally {
       hideLoading();
     }
   },
 
-  // 状態遷移 ＆ UI動的切り替え
+  showCollisionAlert(msg) {
+    const alertBox = document.getElementById("collision-alert");
+    const alertText = document.getElementById("collision-text");
+    alertText.innerText = msg;
+    alertBox.style.display = "flex";
+  },
+
+  hideCollisionAlert() {
+    document.getElementById("collision-alert").style.display = "none";
+  },
+
   transitionTo(newState) {
     this.state = newState;
     const card = document.getElementById("order-card");
     const placeholder = document.getElementById("placeholder-view");
     const mainBtn = document.getElementById("btn-main-action");
     const cancelBtn = document.getElementById("btn-cancel-action");
-    const icon = document.getElementById("main-action-icon");
     const label = document.getElementById("main-action-label");
     const sub = document.getElementById("main-action-sub");
 
@@ -121,7 +139,6 @@ const RegisterApp = {
     cancelBtn.disabled = false;
     mainBtn.disabled = false;
 
-    // カードデータ描画
     document.getElementById("card-user-id").innerText = this.activeOrderData.userId;
     document.getElementById("card-student-info").innerText = this.activeOrderData.studentInfo;
     document.getElementById("card-total-amount").innerText = `¥${this.activeOrderData.totalAmount.toLocaleString()}`;
@@ -137,7 +154,6 @@ const RegisterApp = {
       `;
     });
 
-    // 🟢 会計確定 ➔ 🔵 引き渡し完了 へのボタン動的変化
     if (newState === STATES.LOCKED_UNPAID) {
       document.getElementById("card-status-badge").innerText = "未払いあり";
       document.getElementById("card-status-badge").className = "badge-status badge-unpaid";
@@ -153,14 +169,12 @@ const RegisterApp = {
     }
   },
 
-  // メインボタンタップ時（動的分岐）
   async handleMainAction() {
     setButtonsDisabled(true);
     try {
       if (this.state === STATES.LOCKED_UNPAID) {
         showLoading("会計処理を実行中...");
         await ApiClient.request("confirmPayment", { userId: this.activeUserId });
-        // 会計成功 ➔ 画面をリセットせず「引き渡し完了」状態へ遷移！
         this.activeOrderData.hasUnpaid = false;
         this.transitionTo(STATES.LOCKED_PAID);
       } else if (this.state === STATES.LOCKED_PAID) {
@@ -196,7 +210,6 @@ const RegisterApp = {
   }
 };
 
-// 2. オンスクリーン・テンキー コントローラー (Numpad Controller)
 const Numpad = {
   buffer: "",
   press(key) {
