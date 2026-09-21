@@ -11,7 +11,10 @@
 
   <header>
     <h1>ラ・サール学園バザー</h1>
-    <div id="user-badge" style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px;">読込中...</div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <a id="admin-link" href="admin.html" class="admin-nav-btn" style="display: none;">POSレジ画面へ</a>
+      <div id="user-badge" class="user-badge">読込中...</div>
+    </div>
   </header>
 
   <div class="container" id="product-list"></div>
@@ -23,35 +26,51 @@
     </button>
   </div>
 
+  <!-- 🛒 カート内容最終確認モーダル (編集不可・閲覧のみ) -->
   <div class="modal" id="review-modal">
     <div class="modal-content">
-      <h3 style="margin-bottom: 16px;">🛒 注文内容の最終確認</h3>
-      <div id="review-items"></div>
-      <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; margin: 20px 0;">
-        <span>合計金額:</span>
-        <span id="modal-total" style="color: var(--danger);">¥0</span>
+      <div class="modal-header">
+        <h3>🛒 注文内容の最終確認</h3>
+        <span class="material-icons close-btn" onclick="closeModal('review-modal')">close</span>
       </div>
-      <button class="cart-btn" style="background: #16A34A;" onclick="submitOrder()">この内容で注文を確定する</button>
+      <div id="review-items"></div>
+      <div class="modal-total-row">
+        <span>合計金額:</span>
+        <span id="modal-total" class="text-danger">¥0</span>
+      </div>
+      <button class="cart-btn btn-success" onclick="submitFinalOrder()">
+        <span class="material-icons">done_all</span>
+        この内容で注文を確定する
+      </button>
     </div>
   </div>
 
-  <div class="modal" id="success-modal" style="align-items: center; padding: 16px;">
-    <div class="modal-content" style="border-radius: 20px; text-align: center;">
-      <span class="material-icons" style="color: #16A34A; font-size: 56px;">check_circle</span>
+  <!-- 🔒 注文完了 ＆ 偽造防止QR表示モーダル -->
+  <div class="modal" id="success-modal">
+    <div class="modal-content text-center">
+      <span class="material-icons success-icon">check_circle</span>
       <h2>ご注文が確定しました！</h2>
-      <p style="font-size: 12px; color: var(--danger); margin: 8px 0; font-weight: 700;">※この画面のスクリーンショットを保存してください。</p>
-      <div id="qrcode-area" style="margin: 16px auto; display: inline-block;"></div>
-      <div style="background: var(--primary-light); padding: 12px; border-radius: 10px; text-align: left; font-size: 14px; margin-bottom: 16px;">
-        <div>注文ID: <b id="res-order-id">-</b></div>
-        <div>合計金額: <b id="res-total">¥0</b></div>
+      <p class="screenshot-notice">※当日スムーズに引き換えるため、この画面のスクリーンショットを保存してください。</p>
+      
+      <div id="qrcode-area" class="qrcode-container"></div>
+
+      <div class="order-summary-box">
+        <div class="summary-header">
+          <span>注文ID: <b id="res-order-id">-</b></span>
+          <span id="res-total" class="text-danger font-bold">¥0</span>
+        </div>
+        <div id="res-items-detail" class="summary-details"></div>
       </div>
+
+      <p class="mail-notice">※同じ内容の案内メールをご登録のGmail宛てにも自動送信しました。</p>
       <button class="cart-btn" onclick="location.reload()">トップに戻る</button>
     </div>
   </div>
 
+  <!-- ⏳ 暗転ローディング -->
   <div id="loading-overlay">
     <div class="spinner"></div>
-    <div id="loading-text" style="font-size: 14px; font-weight: 700;">データを安全に読み込み中...</div>
+    <div id="loading-text">データを安全に読み込み中...</div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
