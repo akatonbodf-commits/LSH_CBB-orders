@@ -1,10 +1,13 @@
 /**
- * 共通 API クライアント ＆ レジ端末ID管理モジュール
+ * GAS Web API 通信クライアント (GitHub Pages ➔ GAS)
  */
+// ★ご自身でデプロイしたGASの「ウェブアプリURL」に差し替えてください
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/YOUR_EXEC_ID_HERE/exec";
+
 const ApiClient = {
   regIdKey: "LASALLE_POS_REG_ID",
 
-  // 端末固有のレジIDを取得（なければ自動生成して保存）
+  // レジ端末IDの取得・生成
   getRegId() {
     let regId = localStorage.getItem(this.regIdKey);
     if (!regId) {
@@ -14,31 +17,38 @@ const ApiClient = {
     return regId;
   },
 
-  // GASバックエンドへのリクエスト送信（Web Apps API / google.script.run 両対応）
+  // GASへPOSTリクエストを送信
   async request(action, payload = {}) {
-    payload.regId = this.getRegId(); // 全リクエストにレジIDを自動付与
+    payload.regId = this.getRegId();
 
-    return new Promise((resolve, reject) => {
-      // GASの google.script.run 環境下での実行
-      if (typeof google !== "undefined" && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(response => {
-            if (response.success) {
-              resolve(response.data);
-            } else {
-              reject(new Error(response.error ? response.error.message : "不明なエラーが発生しました。"));
-            }
-          })
-          .withFailureHandler(err => reject(err))
-          .doPost({
-            postData: {
-              contents: JSON.stringify({ action, payload })
-            }
-          });
-      } else {
-        // スタンドアロンテスト用の fetch 互換コード
-        reject(new Error("GAS実行環境（google.script.run）が見つかりません。"));
+    const requestBody = {
+      action: action,
+      payload: payload
+    };
+
+    try {
+      const response = await fetch(GAS_WEB_APP_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8" // GASのdoPostで確実に受け取るためtext/plain指定
+        },
+        body: JSON.stringify(requestBody),
+        redirect: "follow"
+      });
+
+      if (!response.ok) {
+        throw new Error(`通信エラー: HTTP ${response.status}`);
       }
-    });
+
+      const result = await response.json();
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error ? result.error.message : "処理中にエラーが発生しました。");
+      }
+    } catch (err) {
+      console.error("API Request Error:", err);
+      throw err;
+    }
   }
 };
