@@ -17,7 +17,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("user-badge").innerText = state.email;
     renderProducts();
   } catch (err) {
-    alert("読み込みエラー: " + err.message);
+    alert("初期読込エラー: " + err.message);
   } finally {
     hideLoading();
   }
@@ -104,7 +104,7 @@ function openCartReview() {
 
 async function submitOrder() {
   document.getElementById("review-modal").style.display = "none";
-  showLoading("在庫を安全に確保中...");
+  showLoading("在庫を安全に確保中...\n画面を閉じずにお待ちください。");
 
   try {
     const res = await fetchApi("submitOrder", { email: state.email, cart: state.cart });
